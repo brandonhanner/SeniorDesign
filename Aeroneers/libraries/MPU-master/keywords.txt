@@ -1,0 +1,60 @@
+################################################################################
+# Datatypes (KEYWORD1)
+################################################################################
+
+MPU6000	KEYWORD1
+MPU6050	KEYWORD1
+MPU6500	KEYWORD1
+MPU9250_Passthru	KEYWORD1
+MPU9250_Master		KEYWORD1
+MPU9250	KEYWORD1
+Ascale_t	KEYWORD1
+Gscale_t	KEYWORD1
+Mscale_t	KEYWORD1
+Mmode_t	KEYWORD1
+MPU_Error_t	KEYWORD1
+
+################################################################################
+# Methods and Functions (KEYWORD2)
+########################kkkkk########################################################
+
+accelWakeOnMotion	KEYWORD2
+begin	KEYWORD2
+calibrateMagnetometer   KEYWORD2
+checkNewAccelGyroData	KEYWORD2
+checkNewMagData	KEYWORD2
+checkWakeOnMotion	KEYWORD2
+gyroMagSleep	KEYWORD2
+gyroMagWake	KEYWORD2
+readAccelerometer	KEYWORD2
+readGyrometer	KEYWORD2
+readTemperature	KEYWORD2
+readMagnetometer	KEYWORD2
+
+################################################################################
+# Constants (LITERAL1)
+################################################################################
+
+AFS_2G	LITERAL1
+AFS_4G	LITERAL1
+AFS_8G	LITERAL1
+AFS_16G	LITERAL1
+
+GFS_250DPS	LITERAL1
+GFS_500DPS	LITERAL1
+GFS_1000DPS	LITERAL1
+GFS_2000DPS	LITERAL1
+
+MFS_14BITS	LITERAL1
+MFS_16BITS	LITERAL1
+
+M_8HZ	LITERAL1
+M_100HZ	LITERAL1    
+
+MPU_ERROR_NONE	LITERAL1
+MPU_ERROR_CONNECT	LITERAL1
+MPU_ERROR_IMU_ID	LITERAL1
+MPU_ERROR_MAG_ID	LITERAL1
+MPU_ERROR_SELFTEST  LITERAL1
+
+
