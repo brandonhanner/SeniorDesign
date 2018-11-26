@@ -12,39 +12,42 @@ int main()
   uint32_t start = 0;
   uint32_t end = 0;
   uint32_t prevTime = 0;
-  uint32_t last_round = 0;
+  uint32_t last_round = millis();
   uint32_t delta_t = 0;
   bool not_done = true;
   int i = 0;
   float time0 = 0.0;
   float time1 = 0.0;
+  static uint32_t msec_prev = 0;
+  float max = 0.0;
+  float min = 100.0;
+  float maxdelt = 0.0;
+  float mindelt = 100.0;
 
-  while (i<1000)
+  while (i<10000)
   {
-    start = millis();
-    imu.updateIMU();
-    time0 += millis()-start;
-    i++;
-    /*
-    test comment
-    static uint32_t msec_prev;
     uint32_t msec_curr = millis();
 
-    if (msec_curr-msec_prev > 11) {
+    if (msec_curr-msec_prev > 8) {
+	start = millis();
+        delta_t = start - last_round;
         i++;
-        delta_t = millis()-last_round;
-        //imu.updateIMU();
+        imu.updateIMU();
         time0+= (float) delta_t;
         msec_prev = msec_curr;
-        //curVal = (weight*imu.getXaccel()) + ((1-weight) * prevVal);
+        curVal = (weight*imu.getXaccel()) + ((1-weight) * prevVal);
         prevVal = curVal;
-        //printf(" %f -- %d -- %d\n",curVal, prevTime,delta_t);
+	end = millis();
+        prevTime += end-start;
+        if (end - start > max) max = end-start;
+        if (end - start < min) min = end-start;
+        if (delta_t > maxdelt) maxdelt = (float) delta_t;
+	if (delta_t < mindelt) mindelt = (float) delta_t;
+        printf(" %f -- %d -- %d\n",curVal, end-start ,delta_t);
         last_round = millis();
         //yn = w × xn + (1 – w) × yn – 1
-
-    }*/
-    //end = millis();
-    //prevTime = end-start;
+    };
   }
-  printf("%f\n", time0/1000.0);
+  printf("%f , %f, %f\n", time0/10000.0, ((float)prevTime)/10000.0, (time0/10000.0)+(((float)prevTime)/10000.0));
+  printf("max loop: %f, min loop: %f, max delt: %f, min delt: %f\n", max, min, maxdelt, mindelt);
 }
