@@ -61,7 +61,8 @@ class myIMU {
        temp = 0.0;
      }
 
-     void updateIMU();
+     void updateIMU(); //updates all IMU feeds
+     void updateAccel(); //updates only the accelerometer portion
      void calibrateAccelerometer();
 
      float getXaccel();

@@ -20,6 +20,10 @@ void myIMU::updateIMU()
 
 
 }
+void myIMU::updateAccel()
+{
+  imu->readAccelerometer(xAccel, yAccel, zAccel);
+}
 void myIMU::calibrateAccelerometer()
 {
   int count = 0;
