@@ -19,7 +19,7 @@ int main()
   int i = 0;
   float time0 = 0.0;
   float time1 = 0.0;
-  static uint32_t msec_prev = 0;
+  static uint32_t msec_prev = millis();
   float max = 0.0;
   float min = 100.0;
   float maxdelt = 0.0;
@@ -31,7 +31,8 @@ int main()
   {
     msec_curr = millis();
 
-    if (msec_curr-msec_prev > 8) {
+    if ((msec_curr-msec_prev) > 8) 
+    {
 	start = millis();
         delta_t = start - last_round;
         i++;
@@ -49,7 +50,7 @@ int main()
         printf(" Accel: %+-8f \t loop: %-8d \t delta: %-8d\n",curVal, end-start ,delta_t);
         last_round = millis();
         //yn = w × xn + (1 – w) × yn – 1
-    };
+    }
   }
   //time0 holds delta_ts so avg time to get back, prevTime holds loop times so print statement prints avg time to get back to the loop, avg time spent in the loop, and average total time.
   printf("avg delta: %f , avg loop: %f, avg total: %f\n", time0/(float)numberOfIterations, ((float)prevTime)/(float)numberOfIterations, (time0/(float)numberOfIterations)+(((float)prevTime)/(float)numberOfIterations));
