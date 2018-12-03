@@ -6,6 +6,7 @@
 int main()
 {
   myIMU imu;
+  imu.calibrateAccelerometer();
   float prevVal=0.0;
   float curVal = 0.0;
   float weight = 0.2;
@@ -23,8 +24,9 @@ int main()
   float min = 100.0;
   float maxdelt = 0.0;
   float mindelt = 100.0;
+  int numberOfIterations = 1000;
 
-  while (i<10000)
+  while (i<numberOfIterations)
   {
     uint32_t msec_curr = millis();
 
@@ -32,7 +34,7 @@ int main()
 	start = millis();
         delta_t = start - last_round;
         i++;
-        imu.updateIMU();
+        imu.updateAccel();
         time0+= (float) delta_t;
         msec_prev = msec_curr;
         curVal = (weight*imu.getXaccel()) + ((1-weight) * prevVal);
@@ -48,6 +50,7 @@ int main()
         //yn = w × xn + (1 – w) × yn – 1
     };
   }
-  printf("%f , %f, %f\n", time0/10000.0, ((float)prevTime)/10000.0, (time0/10000.0)+(((float)prevTime)/10000.0));
+  //time0 holds delta_ts so avg time to get back, prevTime holds loop times so print statement prints avg time to get back to the loop, avg time spent in the loop, and average total time.
+  printf("%f , %f, %f\n", time0/(float)numberOfIterations, ((float)prevTime)/(float)numberOfIterations, (time0/(float)numberOfIterations)+(((float)prevTime)/(float)numberOfIterations));
   printf("max loop: %f, min loop: %f, max delt: %f, min delt: %f\n", max, min, maxdelt, mindelt);
 }
