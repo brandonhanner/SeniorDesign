@@ -1,4 +1,0 @@
-*.swp
-*.o
-*~
-extras/i2c/wiringpi/examples/MPU_WhoAmI
