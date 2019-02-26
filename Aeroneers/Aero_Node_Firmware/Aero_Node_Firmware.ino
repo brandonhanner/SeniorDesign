@@ -32,7 +32,6 @@ volatile uint32_t last_open_micros=0;
 
 uint32_t timeout = 500;                   // time in ms that we want to call an operation timed out
 volatile uint32_t start_time;             //time that the transition was started
-volatile uint32_t current_time;           //current time
 volatile int attempts = 0;                // retry counter
 int tries = 5;                            //number of attempts that we want the node to make to meet the target state
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -60,7 +59,7 @@ state_e readCAN()
 
 void openDebounceInterrupt()                                          //this is the function that is called upon the rising edge of the "opened" input
 {
-  if((long)(micros() - last_open_micros) >= debouncing_time * 1000)   //if the current time - last time we came to the routine is greater than the threshold, otherwise skip
+  if((long)(micros() - last_open_micros) >= debouncing_time * 1000)   //if the current time - last time we came to the routine is greater than the threshold proceed, otherwise skip
   {
     OPEN_ISR();                                                       //call our actual interrupt routine
     last_open_micros = micros();                                      //and set the last time we were here to now
@@ -68,7 +67,7 @@ void openDebounceInterrupt()                                          //this is 
 }
 void closeDebounceInterrupt()                                         //this is the function that is called upon the rising edge of the "closed" input
 {
-  if((long)(micros() - last_closed_micros) >= debouncing_time * 1000) //if the current time - last time we came to the routine is greater than the threshold, otherwise skip
+  if((long)(micros() - last_closed_micros) >= debouncing_time * 1000) //if the current time - last time we came to the routine is greater than the threshold proceed, otherwise skip
   {
     CLOSE_ISR();                                                      //call our actual interrup routine
     last_closed_micros = micros();                                    //and set the last time we were here to now
