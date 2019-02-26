@@ -30,7 +30,7 @@ volatile uint32_t last_open_micros=0;
 //surface takes longer than "timeout" ms to open we try a certain number of times (which we keep in "attempts"),
 //and then we can go into an unknown state because we know something is wrong. 
 
-uint32_t timeout = 100;         // time in ms that we want to call an operation timed out
+uint32_t timeout = 500;         // time in ms that we want to call an operation timed out
 volatile uint32_t start_time;   //time that the transition was started
 volatile uint32_t current_time; //current time
 volatile int attempts = 0;      // retry counter
@@ -127,13 +127,13 @@ void loop()
       case CLOSED_STATE:
         digitalWrite(LED_BUILTIN,LOW);
         //open_surface();
-        start_time = current_time;
+        start_time = millis();
         current_state = TRANSITIONING_OPEN_STATE;
         break;
 
       case TRANSITIONING_OPEN_STATE:
         digitalWrite(LED_BUILTIN,LOW);
-        if((current_time - start_time) > timeout)//if we timed out
+        if((millis() - start_time) > timeout)//if we timed out
         {
           current_state = UNKNOWN_STATE;
         }
@@ -142,17 +142,17 @@ void loop()
       case TRANSITIONING_CLOSED_STATE:
         digitalWrite(LED_BUILTIN,LOW);
         //open_surface();
-        start_time = current_time;
+        start_time = millis();
         current_state = TRANSITIONING_OPEN_STATE;
         break;
 
       case UNKNOWN_STATE:
-        digitalWrite(LED_BUILTIN,LOW);
+        digitalWrite(LED_BUILTIN,HIGH);
         if (attempts < tries)
         {
           //open_surface();
           attempts++;
-          start_time = current_time;
+          start_time = millis();
           current_state = TRANSITIONING_OPEN_STATE;
         }
         break;
@@ -172,7 +172,7 @@ void loop()
       case OPEN_STATE:
         digitalWrite(LED_BUILTIN,LOW);
         //close_surface();
-        start_time = current_time;
+        start_time = millis();
         current_state = TRANSITIONING_CLOSED_STATE;
         break;
 
@@ -183,24 +183,24 @@ void loop()
       case TRANSITIONING_OPEN_STATE:
         digitalWrite(LED_BUILTIN,LOW);
         //close_surface();
-        start_time = current_time;
+        start_time = millis();
         current_state = TRANSITIONING_CLOSED_STATE;
         break;
 
       case TRANSITIONING_CLOSED_STATE:
         digitalWrite(LED_BUILTIN,LOW);
-        if((current_time - start_time) > timeout)//if we timed out
+        if((millis() - start_time) > timeout)//if we timed out
         {
           current_state = UNKNOWN_STATE;
         }
         break;
 
       case UNKNOWN_STATE:
-        digitalWrite(LED_BUILTIN,LOW);
+        digitalWrite(LED_BUILTIN,HIGH);
         if (attempts < tries)
         {
           //close_surface();
-          start_time = current_time;
+          start_time = millis();
           attempts++;
           current_state = TRANSITIONING_CLOSED_STATE;
         }
