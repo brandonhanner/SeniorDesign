@@ -1,9 +1,8 @@
 #include<stdint.h>
 #include<FlexCAN.h>
-#include <avr/io.h>
-#include <avr/interrupt.h>
+#include<PWMServo2.h>
 
-//////////////////////////////////////////////////////////////// V A R I A B L E S /////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////// S T A T E  V A R I A B L E S /////////////////////////////////////////////////////////////////////
 typedef enum
 {
   OPEN_STATE,                             //we assume the wing is in the open state
@@ -20,20 +19,15 @@ typedef enum
 volatile state_e current_state;           //state variable for the current state of the system
 volatile state_e target_state;            //state variable for the target state of the system
 
-//This block of variables is used within the ISR(Interrupt Service Routine) for software debouncing of the inputs. Debouncing time is the threshold of time in milliseconds that you want to set for your system.
-long debouncing_time = 15;                //microseconds we want to ignore the state of the button until we accept a state.
-volatile uint32_t last_closed_micros=0;
-volatile uint32_t last_open_micros=0;
-
 //This block of variables is for keeping track of timing when transitioning between states.
 //We do this so that, if for example we want the control surface to open, and the control
 //surface takes longer than "timeout" ms to open we try a certain number of times (which we keep in "attempts"),
 //and then we can go into an unknown state because we know something is wrong.
 
-uint32_t timeout = 500;                   // time in ms that we want to call an operation timed out
+uint32_t timeout = 500;                   //time in ms that we want to call an operation timed out
 volatile uint32_t start_time;             //time that the transition was started
-volatile int attempts = 0;                // retry counter
-int tries = 5;                            //number of attempts that we want the node to make to meet the target state
+volatile int current_attempts = 0;        //number of times we have attempted to meet the desired state
+int attempts = 4;                         //number of attempts that we want the node to make to meet the target state
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////// R E A D  C A N  F U N C T I O N //////////////////////////////////////////////////////////////////////
@@ -57,6 +51,11 @@ state_e readCAN()
 
 //////////////////////////////////////////////  I N T E R R U P T  S E R V I C E  R O U T I N E S  //////////////////////////////////////////////////////////////
 
+//This block of variables is used within the ISR(Interrupt Service Routine) for software debouncing of the inputs. Debouncing time is the threshold of time in milliseconds that you want to set for your system.
+long debouncing_time = 15;                                            //microseconds we want to ignore the state of the button until we accept a state.
+volatile uint32_t last_closed_micros=0;
+volatile uint32_t last_open_micros=0;
+
 void openDebounceInterrupt()                                          //this is the function that is called upon the rising edge of the "opened" input
 {
   if((long)(micros() - last_open_micros) >= debouncing_time * 1000)   //if the current time - last time we came to the routine is greater than the threshold proceed, otherwise skip
@@ -77,14 +76,54 @@ void CLOSE_ISR()                                                      //this is 
 {
   current_state = CLOSED_STATE;                                       //change the current state to CLOSED_STATE, it's important to do as little as possible during an interrupt.
                                                                       //if you need to do more processing, simply set a flag in the interrupt and let the main loop address it.
-  attempts = 0;                                                       //reset the attempts to zero
+  current_attempts = 0;                                               //reset the current_attempts to zero
 }
 
 void OPEN_ISR()                                                       //this is the actual ISR (Interrupt Service Routine) where we alter the state based on the inputs
 {
   current_state = OPEN_STATE;                                         //change the current state to OPEN_STATE, it's important to do as little as possible during an interrupt.
                                                                       //if you need to do more processing, simply set a flag in the interrupt and let the main loop address it.
-  attempts = 0;                                                       //reset the attempts to zero
+  current_attempts = 0;                                               //reset the current_attempts to zero
+}
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////// S E R V O  C O N T R O L   F U N C T I O N S //////////////////////////////////////////////////////////////
+
+PWMServo servo;                                                       //instatiate the PWM Servo Library and give it a variable name of "servo
+static int OPEN = 0;                                                  //define the target in degrees that the servo needs to move to for the open state
+static int CLOSE = 180;                                               //define the target in degrees that the servo needs to move to for the closed state
+static int minPulse = 640;                                            //minimum pulse width in microseconds that the servo can read
+static int maxPulse = 2250;                                           //maximum pulse width in microseconds that the servo can read
+
+static uint32_t open_time = 500;                                      //time in milliseconds that it SHOULD take the wing to make this maneuver 
+static uint32_t close_time = 500;                                     //time in milliseconds that it SHOULD take the wing to make this maneuver
+
+volatile uint32_t servo_open_start_time = 0;                          //time in milliseconds in which the servo began to open
+volatile uint32_t servo_close_start_time = 0;                         //time in milliseconds in which the servo began to close
+
+#define SERVO_PIN 23                                                  //pin on the teensy 3.2 that the signal for the servo is derived from
+
+//this function handles the opening of the control surface
+void open_surface()
+{
+  if (!servo.attached())                                              //if the servo is disabled                 
+  {
+    servo_open_start_time = millis();                                 //start the open timer
+    servo.attach(SERVO_PIN,minPulse,maxPulse);                        //enable the servo
+    servo.write(OPEN);                                                //and tell it to open
+  }
+  
+  
+}
+//this function handles the closing of the control surface
+void close_surface()
+{
+  if (!servo.attached())                                             //if the servo is disabled
+  {
+    servo_close_start_time = millis();                               //start the close timer
+    servo.attach(SERVO_PIN,minPulse,maxPulse);                       //enable the servo
+    servo.write(CLOSE);                                              //and tell it to close
+  }
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -99,19 +138,6 @@ void setup()
   attachInterrupt(7,openDebounceInterrupt,RISING);  //attach the openDebounceInterrupt function to the rising edge of input on pin 7
   attachInterrupt(8,closeDebounceInterrupt,RISING); //attach the closeDebounceInterrupt function to the rising edge of input on pin 8
   Serial.begin(115200);                             //Start the Serial terminal, this is for debugging only.
-}
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-///////////////////////////////////////////////////// S E R V O  C O N T R O L   F U N C T I O N S //////////////////////////////////////////////////////////////
-//these arent fully fleshed out yet. In here we'll fill in the functions to send out the signal to drive the servo.
-void open_surface()
-{
-  //send_pwm_open();
-}
-
-void close_surface()
-{
-  //send_pwm_close();
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -130,11 +156,12 @@ void loop()
     {
       case OPEN_STATE:                                             //we are already in the OPEN_STATE
         digitalWrite(LED_BUILTIN,HIGH);                            //change the state of the onboard LED, just to debug the system
+        servo.detach();
         break;
 
       case CLOSED_STATE:                                           //we are currently in the CLOSED_STATE
         digitalWrite(LED_BUILTIN,LOW);                             //change the state of the onboard LED, just to debug the system
-        //open_surface();                                          //send the message to open the control surface
+        open_surface();                                            //send the message to open the control surface
         start_time = millis();                                     //record the start time of the opening process, in ms since the system booted
         current_state = TRANSITIONING_OPEN_STATE;                  //change the state to TRANSITIONING_OPEN_STATE
         break;
@@ -149,17 +176,17 @@ void loop()
 
       case TRANSITIONING_CLOSED_STATE:                             //we are already in the TRANSITIONING_CLOSED_STATE
         digitalWrite(LED_BUILTIN,LOW);                             //change the state of the onboard LED, just to debug the system
-        //open_surface();                                          //send the message to open the control surface
+        open_surface();                                            //send the message to open the control surface
         start_time = millis();                                     //record the start time of the opening process, in ms since the system booted
         current_state = TRANSITIONING_OPEN_STATE;                  //change the state to TRANSITIONING_OPEN_STATE
         break;
 
       case UNKNOWN_STATE:
         digitalWrite(LED_BUILTIN,HIGH);                            //change the state of the onboard LED, just to debug the system
-        if (attempts < tries)                                      //if we haven't tried to open the control surface more than "attempts"
+        if (current_attempts < attempts)                              //if we haven't tried to open the control surface more than "attempts"
         {
-          //open_surface();                                        //send the message to open the control surface
-          attempts++;                                              //increment the "attempts" to keep track of how many times we tried to open it
+          open_surface();                                          //send the message to open the control surface
+          current_attempts++;                                      //increment the "current_attempts" to keep track of how many times we tried to open it
           start_time = millis();                                   //record the start time of the process to open
           current_state = TRANSITIONING_OPEN_STATE;                //set the current_state to TRANSITIONING_OPEN_STATE
         }
@@ -168,7 +195,10 @@ void loop()
       default:
         break;
     }
-
+    if (millis() - servo_open_start_time > open_time)             //if the servo open_time has been exceeded
+    {
+      servo.detach();                                             //disable the servo, this conserves wear and tear on the servo 
+    }
   }
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -180,18 +210,19 @@ void loop()
     {
       case OPEN_STATE:                                             //we are already in the OPEN_STATE
         digitalWrite(LED_BUILTIN,LOW);                             //change the state of the onboard LED, just to debug the system
-        //close_surface();                                         //send the message to close the control surface
+        close_surface();                                           //send the message to close the control surface
         start_time = millis();                                     //record the start time of the opening process, in ms since the system booted
         current_state = TRANSITIONING_CLOSED_STATE;                //set the current_state to TRANSITIONING_CLOSED_STATE
         break;
 
       case CLOSED_STATE:                                           //we are currently in the CLOSED_STATE
         digitalWrite(LED_BUILTIN,HIGH);                            //change the state of the onboard LED, just to debug the system
+        servo.detach();
         break;
 
       case TRANSITIONING_OPEN_STATE:                               //we are already in the TRANSITIONING_OPEN_STATE
         digitalWrite(LED_BUILTIN,LOW);                             //change the state of the onboard LED, just to debug the system
-        //close_surface();                                         //send the message to close the control surface
+        close_surface();                                           //send the message to close the control surface
         start_time = millis();                                     //record the start time of the opening process, in ms since the system booted
         current_state = TRANSITIONING_CLOSED_STATE;                //set the current_state to TRANSITIONING_CLOSED_STATE
         break;
@@ -206,17 +237,21 @@ void loop()
 
       case UNKNOWN_STATE:                                          //we are already in the UNKNOWN_STATE
         digitalWrite(LED_BUILTIN,HIGH);                            //change the state of the onboard LED, just to debug the system
-        if (attempts < tries)                                      //if we haven't tried to close the control surface more than "attempts"
+        if (current_attempts < attempts)                                      //if we haven't tried to close the control surface more than "attempts"
         {
-          //close_surface();                                       //send the message to close the control surface
+          close_surface();                                         //send the message to close the control surface
           start_time = millis();                                   //record the start time of the opening process, in ms since the system booted
-          attempts++;                                              //increment the "attempts" to keep track of how many times we tried to open it
+          current_attempts++;                                              //increment the "current_attempts" to keep track of how many times we tried to open it
           current_state = TRANSITIONING_CLOSED_STATE;              //set the current_state to TRANSITIONING_CLOSED_STATE
         }
         break;
 
       default:
         break;
+    }
+    if (millis() - servo_close_start_time > close_time)            //if the servo close_time has been exceeded
+    {
+      servo.detach();                                              //disable the servo, this conserves wear and tear on the servo
     }
   }
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
