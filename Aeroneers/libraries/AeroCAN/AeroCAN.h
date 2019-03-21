@@ -44,7 +44,7 @@ typedef struct
   uint8_t target_address;
   uint8_t data[8];
   uint8_t len;
-}AeroCAN_message_t;
+} AeroCAN_message_t;
 
 #define NODE 0
 #define CONTROLLER 1

@@ -506,7 +506,7 @@ void AeroCANnode::run(void)
         digitalWrite(LED_BUILTIN,LOW);                             //change the state of the onboard LED, just to debug the system
         if((millis() - start_time) > timeout)                      //if we have exceeded the timeout threshold, and still haven't reached the target state
         {
-          current_state = UNKNOWN_STATE;                           //set the state to UNKNOWN_STATE, indicating an error has occurred
+          //current_state = UNKNOWN_STATE;                           //set the state to UNKNOWN_STATE, indicating an error has occurred
         }
         break;
 
@@ -567,13 +567,14 @@ void AeroCANnode::run(void)
         digitalWrite(LED_BUILTIN,LOW);                             //change the state of the onboard LED, just to debug the system
         if((millis() - start_time) > timeout)                      //if we have exceeded the timeout threshold, and still haven't reached the target state
         {
-          current_state = UNKNOWN_STATE;                           //set the current_state to UNKNOWN_STATE
+          //current_state = UNKNOWN_STATE;                           //set the current_state to UNKNOWN_STATE
         }
         break;
 
       case UNKNOWN_STATE:                                          //we are already in the UNKNOWN_STATE
-        digitalWrite(LED_BUILTIN,HIGH);                            //change the state of the onboard LED, just to debug the system
-        if (current_attempts < attempts)                                      //if we haven't tried to close the control surface more than "attempts"
+        digitalWrite(LED_BUILTIN,HIGH);
+                                  //change the state of the onboard LED, just to debug the system
+        if (current_attempts < attempts)                           //if we haven't tried to close the control surface more than "attempts"
         {
           close_surface();                                         //send the message to close the control surface
           start_time = millis();                                   //record the start time of the opening process, in ms since the system booted
