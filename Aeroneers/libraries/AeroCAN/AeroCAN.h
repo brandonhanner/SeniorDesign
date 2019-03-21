@@ -50,7 +50,6 @@ typedef struct
 #define CONTROLLER 1
 #define SERVO_PIN 23                       //pin on the teensy 3.2 that the signal for the servo is derived from
 
-static CAN_message_t testmsg;  //this is the structure we receive CAN messages into,
 
 class AeroCAN
 {
@@ -99,29 +98,34 @@ class AeroCANnode : public AeroCAN
 private:
 
   //node variables
-  uint16_t timeout;
-  uint8_t attempts;
+
   uint8_t group_ids[8] = {255,255,255,255,255,255,255,255};
+
+  volatile uint32_t start_time;                    //time that the transition was started
+  volatile int current_attempts = 0;               //number of times we have attempted to meet the desired state
+  uint16_t timeout=600;
+  uint8_t attempts = 5;
   volatile int OPEN = 0;                           //define the target in degrees that the servo needs to move to for the open state
   volatile int CLOSE = 180;                        //define the target in degrees that the servo needs to move to for the closed state
   volatile int minPulse = 640;                     //minimum pulse width in microseconds that the servo can read
   volatile int maxPulse = 2250;                    //maximum pulse width in microseconds that the servo can read
   volatile uint32_t open_time = 500;               //time in milliseconds that it SHOULD take the wing to make this maneuver
   volatile uint32_t close_time = 500;              //time in milliseconds that it SHOULD take the wing to make this maneuver
+  volatile uint32_t servo_open_start_time = 0;     //time in milliseconds in which the servo began to open
+  volatile uint32_t servo_close_start_time = 0;    //time in milliseconds in which the servo began to close
+
   PWMServo servo;
+
   //This block of variables is used within the ISR(Interrupt Service Routine) for software debouncing of the inputs. Debouncing time is the threshold of time in milliseconds that you want to set for your system.
   long debouncing_time = 15;                                            //microseconds we want to ignore the state of the button until we accept a state.
   volatile uint32_t last_closed_micros=0;
   volatile uint32_t last_open_micros=0;
 
-  volatile uint32_t start_time;                    //time that the transition was started
-  volatile int current_attempts = 0;               //number of times we have attempted to meet the desired state
+
 
   volatile state_e current_state = UNKNOWN_STATE;                  //state variable for the current state of the system
   volatile state_e target_state = CLOSED_STATE;                   //state variable for the target state of the system
 
-  volatile uint32_t servo_open_start_time = 0;     //time in milliseconds in which the servo began to open
-  volatile uint32_t servo_close_start_time = 0;    //time in milliseconds in which the servo began to close
 
 
 public:

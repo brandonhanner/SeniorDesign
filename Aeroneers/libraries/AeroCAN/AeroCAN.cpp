@@ -6,11 +6,8 @@ AeroCAN::AeroCAN(uint8_t id)
 }
 int AeroCAN::read(AeroCAN_message_t &msg)            //deconstruct the CAN message into a AeroCAN message
 {
-  if (Can0.read(testmsg))                              //check and see if we have a CAN frame available, if so proceed, otherwise abort.
+  if (Can0.read(inmsg))                              //check and see if we have a CAN frame available, if so proceed, otherwise abort.
   {
-    #ifdef DEBUG
-    Serial.println("this is a read");
-    #endif
     uint32_t cmd_id = inmsg.id;
 
     cmd_id &= 0x7C0;                                //apply a mask with bits 10-6 (starting at 0) to filter out anything but the message type portion
@@ -43,22 +40,15 @@ int AeroCAN::send(const AeroCAN_message_t &msg)
   #endif
   //create the CAN message
   outmsg.id = id;
-  //outmsg.ext = 1;
   int i = 0;
   for (i=0;i<msg.len;i++)
   {
     outmsg.buf[i] = msg.data[i];
   }
-  #ifdef DEBUG
-  Serial.println(outmsg.buf[0]);
-  #endif
   outmsg.len = msg.len;
 
   if (Can0.write(outmsg))
   {
-    #ifdef DEBUG
-    Serial.println("Def was sent");
-    #endif
    return 1;
   }
   else return 0;
@@ -251,6 +241,7 @@ void AeroCANnode::CLOSE_ISR()                                                   
   current_state = CLOSED_STATE;                                       //change the current state to CLOSED_STATE, it's important to do as little as possible during an interrupt.
                                                                       //if you need to do more processing, simply set a flag in the interrupt and let the main loop address it.
   current_attempts = 0;                                               //reset the current_attempts to zero
+
 }
 
 void AeroCANnode::OPEN_ISR()                                                       //this is the actual ISR (Interrupt Service Routine) where we alter the state based on the inputs
@@ -258,6 +249,7 @@ void AeroCANnode::OPEN_ISR()                                                    
   current_state = OPEN_STATE;                                         //change the current state to OPEN_STATE, it's important to do as little as possible during an interrupt.
                                                                       //if you need to do more processing, simply set a flag in the interrupt and let the main loop address it.
   current_attempts = 0;                                               //reset the current_attempts to zero
+
 }
 
 //This is the function that reads the CANbus for commands. It parses the incoming message and decides whether to change the target state to open or closed..
@@ -266,28 +258,27 @@ void AeroCANnode::checkCAN()
 {
   if (AeroCAN::read(tempmsg))
   {
-    #ifdef DEBUG
-    Serial.println("this is a aero");
-    #endif
-
     switch (tempmsg.message_type)
     {
 
      case SET_TARGET_NODE:
      {
+       #ifdef DEBUG
+       Serial.println("SET_TARGET");
+       #endif
       if (tempmsg.target_address == my_id)
      {
        target_state = (state_e) tempmsg.data[0];
      }
-     #ifdef DEBUG
-     Serial.println("this is a target node");
-     #endif
      break;
      }
 
 
      case SET_TARGET_GROUP:
      {
+       #ifdef DEBUG
+       Serial.println("SET_TARGET_GROUP");
+       #endif
       int index = 0;
       for (index=0;index<8;index++)
       {
@@ -303,6 +294,9 @@ void AeroCANnode::checkCAN()
 
      case CURRENT_STATE:
      {
+       #ifdef DEBUG
+       Serial.println("CURRENT_STATE");
+       #endif
       if (tempmsg.target_address == my_id)
      {
       //ignore
@@ -313,6 +307,9 @@ void AeroCANnode::checkCAN()
 
      case SET_OPEN_TIME:
      {
+       #ifdef DEBUG
+       Serial.println("SET_OPEN_TIME");
+       #endif
       if (tempmsg.target_address == my_id)
      {
        uint16_t temp = tempmsg.data[1];//first put the high byte in
@@ -327,6 +324,9 @@ void AeroCANnode::checkCAN()
 
      case SET_CLOSE_TIME:
      {
+       #ifdef DEBUG
+       Serial.println("SET_CLOSE_TIME");
+       #endif
       if (tempmsg.target_address == my_id)
      {
        uint16_t temp = tempmsg.data[1];//first put the high byte in
@@ -334,11 +334,15 @@ void AeroCANnode::checkCAN()
        temp |= tempmsg.data[0];  //or it with the low byte
        close_time = (uint32_t)temp;
      }
+     break;
      }
 
 
      case SET_OPEN_ANGLE:
      {
+       #ifdef DEBUG
+       Serial.println("SET_OPEN_ANGLE");
+       #endif
       if (tempmsg.target_address == my_id)
      {
        uint16_t temp = tempmsg.data[1];//first put the high byte in
@@ -352,6 +356,9 @@ void AeroCANnode::checkCAN()
 
      case SET_CLOSE_ANGLE:
      {
+       #ifdef DEBUG
+       Serial.println("SET_CLOSE_ANGLE");
+       #endif
       if (tempmsg.target_address == my_id)
      {
       uint16_t close_angle = tempmsg.data[1];//first put the high byte in
@@ -365,6 +372,9 @@ void AeroCANnode::checkCAN()
 
      case SET_RETRIES:
      {
+       #ifdef DEBUG
+       Serial.println("SET_RETRIES");
+       #endif
       if (tempmsg.target_address == my_id)
      {
       attempts = tempmsg.data[0];
@@ -376,6 +386,9 @@ void AeroCANnode::checkCAN()
 
      case SET_TIMEOUT:
      {
+       #ifdef DEBUG
+       Serial.println("SET_TIMEOUT");
+       #endif
       if (tempmsg.target_address == my_id)
      {
        uint16_t temp = tempmsg.data[1];//first put the high byte in
@@ -389,6 +402,9 @@ void AeroCANnode::checkCAN()
 
      case SET_MIN_PULSE:
      {
+       #ifdef DEBUG
+       Serial.println("SET_MIN_PULSE");
+       #endif
       if (tempmsg.target_address == my_id)
      {
        uint16_t temp = tempmsg.data[1];//first put the high byte in
@@ -402,6 +418,9 @@ void AeroCANnode::checkCAN()
 
      case SET_MAX_PULSE:
      {
+       #ifdef DEBUG
+       Serial.println("SET_MAX_PULSE");
+       #endif
        if (tempmsg.target_address == my_id)
      {
        uint16_t temp = tempmsg.data[1];//first put the high byte in
@@ -415,6 +434,9 @@ void AeroCANnode::checkCAN()
 
      case SET_GROUP_ID:
      {
+       #ifdef DEBUG
+       Serial.println("SET_GROUP_ID");
+       #endif
       if (tempmsg.target_address == my_id)
      {
        group_ids[tempmsg.data[0]] = tempmsg.data[1];
@@ -425,9 +447,12 @@ void AeroCANnode::checkCAN()
 
      case CLEAR_GROUP_ID:
      {
+       #ifdef DEBUG
+       Serial.println("CLEAR_GROUP_ID");
+       #endif
       if (tempmsg.target_address == my_id)
      {
-       group_ids[tempmsg.data[0]] = 9;
+       //group_ids[tempmsg.data[0]] = 9;
      }
      break;
      }
@@ -435,6 +460,9 @@ void AeroCANnode::checkCAN()
 
      case CONFIG_REQUEST:
      {
+       #ifdef DEBUG
+       Serial.println("CONFIG_REQUEST");
+       #endif
       if (tempmsg.target_address == my_id)
      {
        //send config
@@ -444,6 +472,7 @@ void AeroCANnode::checkCAN()
 
 
      case CONFIG_RESPONSE:
+
      //ignore
      break;
     }
