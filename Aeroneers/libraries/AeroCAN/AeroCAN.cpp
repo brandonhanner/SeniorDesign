@@ -264,7 +264,8 @@ void AeroCANnode::checkCAN()
      case SET_TARGET_NODE:
      {
        #ifdef DEBUG
-       Serial.println("SET_TARGET");
+	   Serial.print("SET_TARGET");
+	   Serial.println(tempmsg.data[0]);
        #endif
       if (tempmsg.target_address == my_id)
      {
