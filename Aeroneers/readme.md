@@ -59,7 +59,9 @@ Rather than using the 11 bit CAN identifier to address each node individually, w
 
 We achieved this by segmenting the 11 bit address space into two sections, the upper 5 bits of the address are reserved for “opcodes” so to speak, and the lower 6 bits are reserved for the address which an opcode is to act upon.
 
-See the application protocol document for more reference: https://github.com/brandonhanner/SeniorDesign/blob/master/Aeroneers/Aeroneers%20CAN%20Protocol.pdf 
+See the application protocol document for more reference: 
+
+[AeroCAN Application Protocol](https://github.com/brandonhanner/SeniorDesign/blob/master/Aeroneers/Aeroneers%20CAN%20Protocol.pdf)
 
 **AeroCAN Library**
 The AeroCAN library was written to facilitate the implementation of an active aero system with different control theories. Our implementation is based solely off of the use of an accelerometer but by using the Teensy 3.6m you have access to a secondary CANbus which could open the door for using things like throttle, brake, steering angle, or any other operating parameters that might be available on a motorsports vehicle that could help teams perfect their control algorithm. This library lets users focus on control theory and leaves the operations of communication, control surface control, and configuration up to the library. 
@@ -68,6 +70,9 @@ While AeroCAN was developed on Teensy hardware and the FlexCAN library, it was d
 
 # Demo Setup
 Being a senior design project, we had to demo our project in the gym of the university. Since cars are not permitted in the gym, we decided to call in the help of Forza Motorsport 7's data out feature to send telemetry from the games physics engine to a wifi enabled microcontroller with a CAN peripheral to act as the main control board. Telemetry is sent via a 312 byte UDP packet containing over 70 parameters of telemetry, which is then parsed by the micro controller and the acceleration vectors are extracted and fed into the main layer to decide how the control surfaces should react. Attached via CANbus is three nodes controlling 3 servos with a aero control surface (model wing) attached to it. This is accomplished using the ForzaUDP2CANnoAeroCAN sketch on an ESP32 with the same CAN transceiver used in the final product.
+
+
 ![enter image description here](https://static1.squarespace.com/static/5c5a36a594d71ab0f5320f36/t/5cd1f60142c6ac00012e115e/1557263887685/IMG_1578.jpg?format=2500w)
 
 
+[Demo Video of AeroCAN](https://youtu.be/JjrttWb5x9Q)
