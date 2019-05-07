@@ -68,7 +68,7 @@ The AeroCAN library was written to facilitate the implementation of an active ae
 
 While AeroCAN was developed on Teensy hardware and the FlexCAN library, it was designed such that the routines for CANcommunication could be adapted to specific hardware with relative ease. 
 
-[Check out the AeroCAN Library Here]
+[Check out the library here]
 (https://github.com/brandonhanner/SeniorDesign/tree/master/Aeroneers/libraries/AeroCAN)
 
 # Demo Setup
