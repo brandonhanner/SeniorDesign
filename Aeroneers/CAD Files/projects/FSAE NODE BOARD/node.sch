@@ -8365,9 +8365,7 @@ Source: &lt;a href="https://eagle.componentsearchengine.com/Datasheets/1/204-5ST
 <wire x1="101.6" y1="121.92" x2="101.6" y2="106.68" width="0.1524" layer="91"/>
 <junction x="88.9" y="121.92"/>
 <wire x1="101.6" y1="106.68" x2="71.12" y2="106.68" width="0.1524" layer="91"/>
-<wire x1="71.12" y1="106.68" x2="71.12" y2="88.9" width="0.1524" layer="91"/>
-<pinref part="U$1" gate="G$1" pin="VIN"/>
-<wire x1="71.12" y1="88.9" x2="66.04" y2="88.9" width="0.1524" layer="91"/>
+<wire x1="71.12" y1="106.68" x2="71.12" y2="86.36" width="0.1524" layer="91"/>
 <pinref part="U$2" gate="G$1" pin="VCC"/>
 <wire x1="106.68" y1="83.82" x2="96.52" y2="83.82" width="0.1524" layer="91"/>
 <wire x1="96.52" y1="83.82" x2="96.52" y2="121.92" width="0.1524" layer="91"/>
@@ -8400,6 +8398,8 @@ Source: &lt;a href="https://eagle.componentsearchengine.com/Datasheets/1/204-5ST
 <wire x1="-30.48" y1="43.18" x2="-27.94" y2="43.18" width="0.1524" layer="91"/>
 <junction x="-30.48" y="43.18"/>
 <wire x1="-30.48" y1="43.18" x2="-30.48" y2="2.54" width="0.1524" layer="91"/>
+<pinref part="U$1" gate="G$1" pin="3.3V"/>
+<wire x1="71.12" y1="86.36" x2="66.04" y2="86.36" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="GND" class="0">

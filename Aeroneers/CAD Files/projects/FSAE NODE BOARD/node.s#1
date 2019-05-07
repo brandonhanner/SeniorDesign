@@ -8217,6 +8217,7 @@ Source: &lt;a href="https://eagle.componentsearchengine.com/Datasheets/1/204-5ST
 <part name="R8" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="R-US_" device="R1206" package3d_urn="urn:adsk.eagle:package:23540/2"/>
 <part name="R9" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="R-US_" device="R1206" package3d_urn="urn:adsk.eagle:package:23540/2"/>
 <part name="F4" library="polyfuse-smd_10" deviceset="?" device="1812L" technology="010"/>
+<part name="R10" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="R-US_" device="R1206" package3d_urn="urn:adsk.eagle:package:23540/2"/>
 </parts>
 <sheets>
 <sheet>
@@ -8324,6 +8325,10 @@ Source: &lt;a href="https://eagle.componentsearchengine.com/Datasheets/1/204-5ST
 <attribute name="NAME" x="128.27" y="12.7" size="1.778" layer="95"/>
 <attribute name="VALUE" x="128.27" y="6.35" size="1.778" layer="96"/>
 </instance>
+<instance part="R10" gate="G$1" x="134.62" y="101.6" smashed="yes" rot="R90">
+<attribute name="NAME" x="133.1214" y="97.79" size="1.778" layer="95" rot="R90"/>
+<attribute name="VALUE" x="137.922" y="97.79" size="1.778" layer="96" rot="R90"/>
+</instance>
 </instances>
 <busses>
 </busses>
@@ -8414,8 +8419,6 @@ Source: &lt;a href="https://eagle.componentsearchengine.com/Datasheets/1/204-5ST
 <wire x1="147.32" y1="121.92" x2="114.3" y2="121.92" width="0.1524" layer="91"/>
 <wire x1="114.3" y1="121.92" x2="114.3" y2="114.3" width="0.1524" layer="91"/>
 <wire x1="114.3" y1="114.3" x2="88.9" y2="114.3" width="0.1524" layer="91"/>
-<pinref part="U$2" gate="G$1" pin="RS"/>
-<wire x1="134.62" y1="88.9" x2="134.62" y2="109.22" width="0.1524" layer="91"/>
 <wire x1="134.62" y1="109.22" x2="114.3" y2="109.22" width="0.1524" layer="91"/>
 <wire x1="114.3" y1="109.22" x2="114.3" y2="114.3" width="0.1524" layer="91"/>
 <junction x="114.3" y="114.3"/>
@@ -8427,6 +8430,8 @@ Source: &lt;a href="https://eagle.componentsearchengine.com/Datasheets/1/204-5ST
 <wire x1="152.4" y1="83.82" x2="147.32" y2="83.82" width="0.1524" layer="91"/>
 <wire x1="147.32" y1="83.82" x2="147.32" y2="121.92" width="0.1524" layer="91"/>
 <junction x="147.32" y="121.92"/>
+<pinref part="R10" gate="G$1" pin="2"/>
+<wire x1="134.62" y1="106.68" x2="134.62" y2="109.22" width="0.1524" layer="91"/>
 </segment>
 <segment>
 <pinref part="GND2" gate="G$1" pin="GND"/>
@@ -8673,6 +8678,13 @@ Source: &lt;a href="https://eagle.componentsearchengine.com/Datasheets/1/204-5ST
 <pinref part="DC1" gate="G$1" pin="VIN"/>
 <wire x1="58.42" y1="121.92" x2="53.34" y2="121.92" width="0.1524" layer="91"/>
 <pinref part="F1" gate="G$1" pin="2"/>
+</segment>
+</net>
+<net name="N$23" class="0">
+<segment>
+<pinref part="U$2" gate="G$1" pin="RS"/>
+<pinref part="R10" gate="G$1" pin="1"/>
+<wire x1="134.62" y1="88.9" x2="134.62" y2="96.52" width="0.1524" layer="91"/>
 </segment>
 </net>
 </nets>
