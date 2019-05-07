@@ -1,6 +1,6 @@
 #include<AeroCAN.h>
 
-AeroCANnode node((uint8_t) 1);
+AeroCANnode node((uint8_t) 2);
 
 CAN_filter_t extendedFilter;
 

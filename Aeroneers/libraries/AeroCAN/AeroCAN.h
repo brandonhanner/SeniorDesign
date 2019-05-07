@@ -8,6 +8,7 @@
 #include "flexcan.h"
 #include<PWMServo2.h>
 #define DEBUG
+#define NO_LIMIT
 typedef enum
 {
   SET_TARGET_NODE,  //0
@@ -64,6 +65,7 @@ public:
   AeroCAN(uint8_t id);
   int send(const AeroCAN_message_t &msg); //deconstruct the AeroCAN message into a CAN message
   int read(AeroCAN_message_t &msg); //deconstruct the CAN message into a AeroCAN message
+  void setID(uint8_t id);
 };
 
 class AeroCANcontroller : public AeroCAN
@@ -99,16 +101,16 @@ private:
 
   //node variables
 
-  uint8_t group_ids[8] = {255,255,255,255,255,255,255,255};
+  uint8_t group_ids[8] = {1,255,255,255,255,255,255,255};
 
   volatile uint32_t start_time;                    //time that the transition was started
   volatile int current_attempts = 0;               //number of times we have attempted to meet the desired state
-  uint16_t timeout=600;
+  uint16_t timeout= 250;
   uint8_t attempts = 5;
-  volatile int OPEN = 0;                           //define the target in degrees that the servo needs to move to for the open state
+  volatile int OPEN = 140;                           //define the target in degrees that the servo needs to move to for the open state
   volatile int CLOSE = 180;                        //define the target in degrees that the servo needs to move to for the closed state
   volatile int minPulse = 640;                     //minimum pulse width in microseconds that the servo can read
-  volatile int maxPulse = 2250;                    //maximum pulse width in microseconds that the servo can read
+  volatile int maxPulse = 2700;                    //maximum pulse width in microseconds that the servo can read
   volatile uint32_t open_time = 500;               //time in milliseconds that it SHOULD take the wing to make this maneuver
   volatile uint32_t close_time = 500;              //time in milliseconds that it SHOULD take the wing to make this maneuver
   volatile uint32_t servo_open_start_time = 0;     //time in milliseconds in which the servo began to open

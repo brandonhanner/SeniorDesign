@@ -4,6 +4,10 @@ AeroCAN::AeroCAN(uint8_t id)
 {
   my_id = (uint8_t) id;
 }
+void AeroCAN::setID(uint8_t id)
+{
+  my_id = id;
+}
 int AeroCAN::read(AeroCAN_message_t &msg)            //deconstruct the CAN message into a AeroCAN message
 {
   if (Can0.read(inmsg))                              //check and see if we have a CAN frame available, if so proceed, otherwise abort.
@@ -191,6 +195,29 @@ return 1;
 ///////////////////////////////////////// A e r o C A N n o d e //////////////////////////////////////////
 AeroCANnode::AeroCANnode(uint8_t id) : AeroCAN(id)
 {
+/*
+1->14
+2->15
+3->16
+4->17
+5->18
+*/
+pinMode(14, INPUT);
+pinMode(15, INPUT);
+pinMode(16, INPUT);
+pinMode(17, INPUT);
+pinMode(18, INPUT);
+
+uint8_t temp_id;
+
+temp_id = 0;
+temp_id |= (uint8_t) digitalRead(14);
+temp_id |= ((uint8_t) digitalRead(15)) << 1;
+temp_id |= ((uint8_t) digitalRead(16)) << 2;
+temp_id |= ((uint8_t) digitalRead(17)) << 3;
+temp_id |= ((uint8_t) digitalRead(18)) << 4;
+
+this->setID(temp_id);
 
 }
 
@@ -264,12 +291,12 @@ void AeroCANnode::checkCAN()
      case SET_TARGET_NODE:
      {
        #ifdef DEBUG
-	   Serial.print("SET_TARGET");
-	   Serial.println(tempmsg.data[0]);
+       Serial.println("SET_TARGET_NODE");
        #endif
       if (tempmsg.target_address == my_id)
      {
        target_state = (state_e) tempmsg.data[0];
+       digitalWrite(LED_BUILTIN,tempmsg.data[0]);
      }
      break;
      }
@@ -286,6 +313,11 @@ void AeroCANnode::checkCAN()
         if (tempmsg.target_address == group_ids[index])
         {
           target_state = (state_e) tempmsg.data[0];
+          if ((state_e) tempmsg.data[0] == CLOSED_STATE)
+          {
+            digitalWrite(13,HIGH);
+          }
+          else digitalWrite(13,LOW);
           break;
         }
       }
@@ -359,6 +391,9 @@ void AeroCANnode::checkCAN()
      {
        #ifdef DEBUG
        Serial.println("SET_CLOSE_ANGLE");
+       Serial.println(tempmsg.target_address);
+       Serial.println(my_id);
+
        #endif
       if (tempmsg.target_address == my_id)
      {
@@ -366,6 +401,9 @@ void AeroCANnode::checkCAN()
       close_angle <<=8; //shift it left
       close_angle |= tempmsg.data[0];  //or it with the low byte
       CLOSE = (int)close_angle;
+      #ifdef DEBUG
+      Serial.println(CLOSE);
+      #endif
      }
      break;
      }
@@ -492,27 +530,31 @@ void AeroCANnode::run(void)
     switch (current_state)                                         //decide what were going to do based on the current state
     {
       case OPEN_STATE:                                             //we are already in the OPEN_STATE
-        digitalWrite(LED_BUILTIN,HIGH);                            //change the state of the onboard LED, just to debug the system
+        //digitalWrite(LED_BUILTIN,HIGH);                            //change the state of the onboard LED, just to debug the system
         servo.detach();
         break;
 
       case CLOSED_STATE:                                           //we are currently in the CLOSED_STATE
-        digitalWrite(LED_BUILTIN,LOW);                             //change the state of the onboard LED, just to debug the system
+        //digitalWrite(LED_BUILTIN,LOW);                             //change the state of the onboard LED, just to debug the system
         open_surface();                                            //send the message to open the control surface
         start_time = millis();                                     //record the start time of the opening process, in ms since the system booted
         current_state = TRANSITIONING_OPEN_STATE;                  //change the state to TRANSITIONING_OPEN_STATE
         break;
 
       case TRANSITIONING_OPEN_STATE:                               //we are already in the TRANSITIONING_OPEN_STATE
-        digitalWrite(LED_BUILTIN,LOW);                             //change the state of the onboard LED, just to debug the system
+        //digitalWrite(LED_BUILTIN,LOW);                             //change the state of the onboard LED, just to debug the system
+
         if((millis() - start_time) > timeout)                      //if we have exceeded the timeout threshold, and still haven't reached the target state
         {
           //current_state = UNKNOWN_STATE;                           //set the state to UNKNOWN_STATE, indicating an error has occurred
+          #ifdef NO_LIMIT
+          OPEN_ISR();
+          #endif
         }
         break;
 
       case TRANSITIONING_CLOSED_STATE:                             //we are already in the TRANSITIONING_CLOSED_STATE
-        digitalWrite(LED_BUILTIN,LOW);                             //change the state of the onboard LED, just to debug the system
+        //digitalWrite(LED_BUILTIN,LOW);                             //change the state of the onboard LED, just to debug the system
         open_surface();                                            //send the message to open the control surface
         start_time = millis();                                     //record the start time of the opening process, in ms since the system booted
         current_state = TRANSITIONING_OPEN_STATE;                  //change the state to TRANSITIONING_OPEN_STATE
@@ -532,10 +574,10 @@ void AeroCANnode::run(void)
       default:
         break;
     }
-    if (millis() - servo_open_start_time > open_time)             //if the servo open_time has been exceeded
-    {
-      servo.detach();                                             //disable the servo, this conserves wear and tear on the servo
-    }
+    //if (millis() - servo_open_start_time > open_time)             //if the servo open_time has been exceeded
+    //{
+    //  servo.detach();                                             //disable the servo, this conserves wear and tear on the servo
+    //}
   }
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -546,34 +588,38 @@ void AeroCANnode::run(void)
     switch (current_state)                                         //decide what were going to do based on the current state
     {
       case OPEN_STATE:                                             //we are already in the OPEN_STATE
-        digitalWrite(LED_BUILTIN,LOW);                             //change the state of the onboard LED, just to debug the system
+        //digitalWrite(LED_BUILTIN,LOW);                             //change the state of the onboard LED, just to debug the system
         close_surface();                                           //send the message to close the control surface
         start_time = millis();                                     //record the start time of the opening process, in ms since the system booted
         current_state = TRANSITIONING_CLOSED_STATE;                //set the current_state to TRANSITIONING_CLOSED_STATE
         break;
 
       case CLOSED_STATE:                                           //we are currently in the CLOSED_STATE
-        digitalWrite(LED_BUILTIN,HIGH);                            //change the state of the onboard LED, just to debug the system
+        //digitalWrite(LED_BUILTIN,HIGH);                            //change the state of the onboard LED, just to debug the system
         servo.detach();
         break;
 
       case TRANSITIONING_OPEN_STATE:                               //we are already in the TRANSITIONING_OPEN_STATE
-        digitalWrite(LED_BUILTIN,LOW);                             //change the state of the onboard LED, just to debug the system
+        //digitalWrite(LED_BUILTIN,LOW);                             //change the state of the onboard LED, just to debug the system
         close_surface();                                           //send the message to close the control surface
         start_time = millis();                                     //record the start time of the opening process, in ms since the system booted
         current_state = TRANSITIONING_CLOSED_STATE;                //set the current_state to TRANSITIONING_CLOSED_STATE
         break;
 
       case TRANSITIONING_CLOSED_STATE:                             //we are already in the TRANSITIONING_CLOSED_STATE
-        digitalWrite(LED_BUILTIN,LOW);                             //change the state of the onboard LED, just to debug the system
+        //digitalWrite(LED_BUILTIN,LOW);                             //change the state of the onboard LED, just to debug the system
+
         if((millis() - start_time) > timeout)                      //if we have exceeded the timeout threshold, and still haven't reached the target state
         {
           //current_state = UNKNOWN_STATE;                           //set the current_state to UNKNOWN_STATE
+          #ifdef NO_LIMIT
+          CLOSE_ISR();
+          #endif
         }
         break;
 
       case UNKNOWN_STATE:                                          //we are already in the UNKNOWN_STATE
-        digitalWrite(LED_BUILTIN,HIGH);
+        //digitalWrite(LED_BUILTIN,HIGH);
                                   //change the state of the onboard LED, just to debug the system
         if (current_attempts < attempts)                           //if we haven't tried to close the control surface more than "attempts"
         {
@@ -587,10 +633,10 @@ void AeroCANnode::run(void)
       default:
         break;
     }
-    if (millis() - servo_close_start_time > close_time)            //if the servo close_time has been exceeded
-    {
-      servo.detach();                                              //disable the servo, this conserves wear and tear on the servo
-    }
+    //if (millis() - servo_close_start_time > close_time)            //if the servo close_time has been exceeded
+    //{
+    //  servo.detach();                                              //disable the servo, this conserves wear and tear on the servo
+    //}
   }
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
