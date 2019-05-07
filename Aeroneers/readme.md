@@ -1,3 +1,4 @@
+
 ## AeroCAN
 ![
 ](https://static1.squarespace.com/static/5c5a36a594d71ab0f5320f36/t/5cd09ff9104c7b2f4c380228/1557176321576/IMG_1575.jpg?format=2500w)
@@ -68,8 +69,7 @@ The AeroCAN library was written to facilitate the implementation of an active ae
 
 While AeroCAN was developed on Teensy hardware and the FlexCAN library, it was designed such that the routines for CANcommunication could be adapted to specific hardware with relative ease. 
 
-[Check out the library here]
-(https://github.com/brandonhanner/SeniorDesign/tree/master/Aeroneers/libraries/AeroCAN)
+[Check out the library here](https://github.com/brandonhanner/SeniorDesign/tree/master/Aeroneers/libraries/AeroCAN)
 
 # Demo Setup
 Being a senior design project, we had to demo our project in the gym of the university. Since cars are not permitted in the gym, we decided to call in the help of Forza Motorsport 7's data out feature to send telemetry from the games physics engine to a wifi enabled microcontroller with a CAN peripheral to act as the main control board. Telemetry is sent via a 312 byte UDP packet containing over 70 parameters of telemetry, which is then parsed by the micro controller and the acceleration vectors are extracted and fed into the main layer to decide how the control surfaces should react. Attached via CANbus is three nodes controlling 3 servos with a aero control surface (model wing) attached to it. This is accomplished using the ForzaUDP2CANnoAeroCAN sketch on an ESP32 with the same CAN transceiver used in the final product.
