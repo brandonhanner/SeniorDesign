@@ -52,6 +52,8 @@ With this in mind we chose the following components:
     
 ![enter image description here](https://static1.squarespace.com/static/5c5a36a594d71ab0f5320f36/t/5cb50074e79c70a0145047d1/1555366016661/mainboard?format=750w)
 
+[Check out the PCB design files here](https://github.com/brandonhanner/SeniorDesign/tree/master/Aeroneers/CAD%20Files/PCBs/projects)
+
 # The Software
 
 **CAN Application Layer Protocol**
@@ -77,5 +79,6 @@ Being a senior design project, we had to demo our project in the gym of the univ
 
 ![enter image description here](https://static1.squarespace.com/static/5c5a36a594d71ab0f5320f36/t/5cd1f60142c6ac00012e115e/1557263887685/IMG_1578.jpg?format=2500w)
 
+[Check out the Demo Code here](https://github.com/brandonhanner/SeniorDesign/blob/master/Aeroneers/Sketches/ForzaUDP2CANnoAeroCAN/ForzaUDP2CANnoAeroCAN.ino)
 
-[Demo Video of AeroCAN](https://youtu.be/JjrttWb5x9Q)
+[Demo Video of AeroCAN on YouTube](https://youtu.be/JjrttWb5x9Q)
